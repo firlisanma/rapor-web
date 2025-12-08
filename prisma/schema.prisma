@@ -1,0 +1,240 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+//
+// ==================== ROLE ====================
+//
+model Role {
+  id_role    Int      @id @default(autoincrement())
+  nama_role  String
+  permission String?
+
+  users      User[]
+}
+
+//
+// ==================== USER ====================
+//
+model User {
+  id_user      Int      @id @default(autoincrement())
+  username     String   @unique
+  password     String
+  nama_lengkap String
+  gender       String?
+  tempat_lahir String?
+  tanggal_lahir DateTime?
+  alamat       String?
+  pend_terakhir String?
+  email        String?
+  phone        String?
+
+  id_role Int
+  role    Role  @relation(fields: [id_role], references: [id_role])
+
+  guru       Guru?
+  walikelas  WaliKelas?
+}
+
+//
+// ==================== GURU ====================
+//
+model Guru {
+  id_guru  Int    @id @default(autoincrement())
+  id_user  Int    @unique
+  nama_guru String?
+  nip      String?
+  id_mapel Int?
+
+  user   User   @relation(fields: [id_user], references: [id_user])
+  mapel  MataPelajaran? @relation(fields: [id_mapel], references: [id_mapel])
+
+  nilai  Nilai[]
+}
+
+//
+// ==================== WALI KELAS ====================
+//
+model WaliKelas {
+  id_wali   Int     @id @default(autoincrement())
+  id_user   Int     @unique
+  id_kelas  Int     @unique   // FIX WAJIB karena one-to-one
+  nama_wali String?
+
+  user  User  @relation(fields: [id_user], references: [id_user])
+  kelas Kelas @relation(fields: [id_kelas], references: [id_kelas])
+}
+
+//
+// ==================== KELAS ====================
+//
+model Kelas {
+  id_kelas   Int       @id @default(autoincrement())
+  nama_kelas String
+  tingkat    String?
+  jurusan    String?
+
+  siswa      Siswa[]
+  wali       WaliKelas?
+  rapor      Rapor[]
+}
+
+
+//
+// ==================== SISWA ====================
+//
+model Siswa {
+  nisn           String   @id
+  nis            String?
+  nama_siswa     String
+  gender         String?
+  tempat_lahir   String?
+  tanggal_lahir  DateTime?
+  alamat         String?
+  ortu_wali      String?
+  asal_sekolah   String?
+  status         String?
+
+  id_kelas Int
+  kelas    Kelas @relation(fields: [id_kelas], references: [id_kelas])
+
+  nilai        Nilai[]
+  sikapNilai   SikapNilai[]
+  ekskulNilai  EkskulNilai[]
+  absensi      AbsensiRekap[]
+  rapor        Rapor[]
+}
+
+//
+// ==================== TAHUN AJARAN ====================
+//
+model TahunAjaran {
+  id_tahun_ajaran Int     @id @default(autoincrement())
+  tahun_ajaran    String
+  semester        Int
+  status          String?
+
+  nilai        Nilai[]
+  sikapNilai   SikapNilai[]
+  ekskulNilai  EkskulNilai[]
+  absensi      AbsensiRekap[]
+  rapor        Rapor[]
+}
+
+//
+// ==================== MATA PELAJARAN ====================
+//
+model MataPelajaran {
+  id_mapel     Int      @id @default(autoincrement())
+  nama_mapel   String
+  kkm          Int
+  kurikulum    String?
+  kategori_mapel String?
+
+  guru  Guru[]
+  nilai Nilai[]
+}
+
+//
+// ==================== NILAI ====================
+//
+model Nilai {
+  id_nilai       Int   @id @default(autoincrement())
+  nisn           String
+  id_mapel       Int
+  id_guru        Int
+  id_tahun_ajaran Int
+  semester       Int
+
+  nilai_angka    Int?
+  nilai_huruf    String?
+  rata_kelas     Float?
+
+  siswa Siswa @relation(fields: [nisn], references: [nisn])
+  mapel MataPelajaran @relation(fields: [id_mapel], references: [id_mapel])
+  guru  Guru @relation(fields: [id_guru], references: [id_guru])
+  tahun TahunAjaran @relation(fields: [id_tahun_ajaran], references: [id_tahun_ajaran])
+}
+
+//
+// ==================== SIKAP ====================
+//
+model Sikap {
+  id_sikap       Int    @id @default(autoincrement())
+  nama_sikap     String
+  kategori_sikap String?
+  urutan         Int?
+
+  nilai SikapNilai[]
+}
+
+//
+// ==================== SIKAP NILAI ====================
+//
+model SikapNilai {
+  id_sikap_nilai Int @id @default(autoincrement())
+  nisn           String
+  id_sikap       Int
+  nilai          String?
+  id_tahun_ajaran Int
+  semester       Int
+
+  siswa  Siswa  @relation(fields: [nisn], references: [nisn])
+  sikap  Sikap  @relation(fields: [id_sikap], references: [id_sikap])
+  tahun  TahunAjaran @relation(fields: [id_tahun_ajaran], references: [id_tahun_ajaran])
+}
+
+//
+// ==================== EKSKUL NILAI ====================
+//
+model EkskulNilai {
+  id_eks_nilai   Int @id @default(autoincrement())
+  nisn           String
+  jenis_ekskul   String
+  nilai          String?
+  id_tahun_ajaran Int
+  semester       Int
+
+  siswa Siswa @relation(fields: [nisn], references: [nisn])
+  tahun TahunAjaran @relation(fields: [id_tahun_ajaran], references: [id_tahun_ajaran])
+}
+
+//
+// ==================== ABSENSI REKAP ====================
+//
+model AbsensiRekap {
+  id_absensi     Int @id @default(autoincrement())
+  nisn           String
+  sakit          Int?
+  izin           Int?
+  alpa           Int?
+  id_tahun_ajaran Int
+  semester       Int
+
+  siswa Siswa @relation(fields: [nisn], references: [nisn])
+  tahun TahunAjaran @relation(fields: [id_tahun_ajaran], references: [id_tahun_ajaran])
+}
+
+//
+// ==================== RAPOR ====================
+//
+model Rapor {
+  id_rapor      Int @id @default(autoincrement())
+  nisn          String
+  id_kelas      Int
+  id_tahun_ajaran Int
+  semester      Int
+  peringkat     Int?
+  catatan_wali  String?
+  tanggal_cetak DateTime?
+  status_rapor  String?
+
+  siswa Siswa @relation(fields: [nisn], references: [nisn])
+  kelas Kelas @relation(fields: [id_kelas], references: [id_kelas])
+  tahun TahunAjaran @relation(fields: [id_tahun_ajaran], references: [id_tahun_ajaran])
+}
