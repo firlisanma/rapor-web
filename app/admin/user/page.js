@@ -11,8 +11,8 @@ export default function UserPage() {
   useEffect(() => {
     async function fetchUsers() {
       const res = await fetch("/api/admin/user");
-      const data = await res.json();
-      setUsers(data);
+const data = await res.json();
+setUsers(data.users || []);
     }
     fetchUsers();
   }, []);
@@ -43,7 +43,7 @@ export default function UserPage() {
         <tbody>
           {users.map((u, i) => (
             <tr key={i}>
-              <td>{i + 1}</td>         {/* Nomor urut UI */}
+              <td>{i + 1}</td>
               <td>{u.id_user}</td>
               <td>{u.username}</td>
               <td>{u.nama_lengkap}</td>

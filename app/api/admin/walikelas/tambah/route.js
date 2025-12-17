@@ -3,19 +3,30 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    const body = await req.json();
+    const { id_user, id_kelas, nama_wali } = await req.json();
 
-    const newWali = await prisma.walikelas.create({
-      data: {
-        nama_wali: body.nama_wali,
-        id_user: body.id_user,
-        id_kelas: body.id_kelas,
-      },
+    // validasi: 1 kelas hanya boleh 1 wali
+    const sudahAda = await prisma.walikelas.findFirst({
+      where: { id_kelas: Number(id_kelas) }
     });
 
-    return NextResponse.json({ status: true, data: newWali });
+    if (sudahAda) {
+      return NextResponse.json({
+        status: false,
+        error: "Kelas ini sudah memiliki wali kelas"
+      });
+    }
+
+    const tambah = await prisma.walikelas.create({
+      data: {
+        id_user: Number(id_user),
+        id_kelas: Number(id_kelas),
+        nama_wali
+      }
+    });
+
+    return NextResponse.json({ status: true, tambah });
   } catch (err) {
-    console.error("TAMBAH WALIKELAS ERROR:", err);
-    return NextResponse.json({ status: false, error: err.message });
+    return NextResponse.json({ status: false, error: err.message }, { status: 500 });
   }
 }

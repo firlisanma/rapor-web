@@ -5,16 +5,13 @@ export async function GET() {
   try {
     const users = await prisma.user.findMany({
       include: {
-        role: true,
+        role: true
       },
+      orderBy: { id_user: "asc" }
     });
 
-    return NextResponse.json(users);
+    return NextResponse.json({ users });
   } catch (err) {
-    console.error("GET USER ERROR:", err);
-    return NextResponse.json(
-      { error: err.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

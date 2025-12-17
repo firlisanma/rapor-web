@@ -3,20 +3,19 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    const body = await req.json();
+    const { id_user, id_mapel, nama_guru, nip } = await req.json();
 
-    const newGuru = await prisma.guru.create({
+    const guru = await prisma.guru.create({
       data: {
-        nama_guru: body.nama_guru,
-        nip: body.nip,
-        id_mapel: body.id_mapel,
-        id_user: body.id_user,
-      },
+        id_user: Number(id_user),
+        id_mapel: Number(id_mapel),
+        nama_guru,
+        nip
+      }
     });
 
-    return NextResponse.json({ status: true, guru: newGuru });
+    return NextResponse.json({ status: true, guru });
   } catch (err) {
-    console.error("TAMBAH GURU ERROR:", err);
-    return NextResponse.json({ status: false, error: err.message });
+    return NextResponse.json({ status: false, error: err.message }, { status: 500 });
   }
 }

@@ -8,14 +8,11 @@ export default function AdminDashboard() {
 
   // Proteksi halaman
   useEffect(() => {
-    const user = localStorage.getItem("rapor_user");
-    if (!user) return router.replace("/login");
-
-    const data = JSON.parse(user);
-    if (data.roleId !== 1) {
-      return router.replace("/login");
-    }
-  }, []);
+  const user = JSON.parse(localStorage.getItem("rapor_user"));
+  if (!user || user.roleId !== 1) {
+    router.replace("/login");
+  }
+}, []);
 
   const menuItems = [
     { title: "Kelola User", path: "/admin/user" },
@@ -25,7 +22,7 @@ export default function AdminDashboard() {
     { title: "Kelola Wali Kelas", path: "/admin/walikelas" },
     { title: "Kelola Mapel", path: "/admin/mapel" },
     { title: "Rapor & Grafik", path: "/admin/rapor" },
-    { title: "Tahun Ajaran", path: "/admin/tahun-ajaran" },
+    { title: "Tahun Ajaran", path: "/admin/tahunajaran" },
   ];
 
   return (

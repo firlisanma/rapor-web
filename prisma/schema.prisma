@@ -38,7 +38,7 @@ model User {
   role    Role  @relation(fields: [id_role], references: [id_role])
 
   guru       Guru?
-  walikelas  WaliKelas?
+  walikelas  Walikelas?
 }
 
 //
@@ -60,7 +60,7 @@ model Guru {
 //
 // ==================== WALI KELAS ====================
 //
-model WaliKelas {
+model Walikelas {
   id_wali   Int     @id @default(autoincrement())
   id_user   Int     @unique
   id_kelas  Int     @unique   // FIX WAJIB karena one-to-one
@@ -80,7 +80,7 @@ model Kelas {
   jurusan    String?
 
   siswa      Siswa[]
-  wali       WaliKelas?
+  wali       Walikelas?
   rapor      Rapor[]
 }
 
@@ -134,7 +134,7 @@ model MataPelajaran {
   nama_mapel   String
   kkm          Int
   kurikulum    String?
-  kategori_mapel String?
+  kategori_mapel String?  // A, B, C, D
 
   guru  Guru[]
   nilai Nilai[]
@@ -187,6 +187,8 @@ model SikapNilai {
   siswa  Siswa  @relation(fields: [nisn], references: [nisn])
   sikap  Sikap  @relation(fields: [id_sikap], references: [id_sikap])
   tahun  TahunAjaran @relation(fields: [id_tahun_ajaran], references: [id_tahun_ajaran])
+
+  @@map("sikapnilai")
 }
 
 //

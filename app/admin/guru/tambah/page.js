@@ -5,71 +5,71 @@ import { useRouter } from "next/navigation";
 
 export default function TambahGuru() {
   const router = useRouter();
-
-  const [nama, setNama] = useState("");
-  const [nip, setNip] = useState("");
-  const [idMapel, setIdMapel] = useState("");
-  const [idUser, setIdUser] = useState("");
   const [users, setUsers] = useState([]);
   const [mapel, setMapel] = useState([]);
 
+  const [form, setForm] = useState({
+    id_user: "",
+    id_mapel: "",
+    nama_guru: "",
+    nip: ""
+  });
+
   useEffect(() => {
-    async function load() {
-      const u = await fetch("/api/admin/user").then(r => r.json());
-      const m = await fetch("/api/admin/mapel").then(r => r.json());
-      setUsers(u);
-      setMapel(m);
-    }
-    load();
-  }, []);
+  fetch("/api/admin/user")
+    .then(res => res.json())
+    .then(data => {
+      console.log("DEBUG USERS:", data.users); // ⬅️ penting
+      setUsers(
+        (data.users || []).filter(u => u.id_role === 2)
+      );
+    });
 
-  async function handleSubmit(e) {
+  fetch("/api/admin/mapel")
+    .then(res => res.json())
+    .then(data => setMapel(data.mapel || []));
+}, []);
+
+
+  function set(name, val) {
+    setForm({ ...form, [name]: val });
+  }
+
+  async function submit(e) {
     e.preventDefault();
-
     await fetch("/api/admin/guru/tambah", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nama_guru: nama,
-        nip,
-        id_mapel: Number(idMapel),
-        id_user: Number(idUser),
-      }),
+      body: JSON.stringify(form)
     });
-
     router.push("/admin/guru");
   }
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div style={{ padding: 20 }}>
       <h2>Tambah Guru</h2>
+      <form onSubmit={submit}>
+        <select value={form.id_user} onChange={e => set("id_user", e.target.value)}>
+          <option value="">-- Pilih User Guru --</option>
+          {users.map(u => (
+            <option key={u.id_user} value={u.id_user}>{u.username}</option>
+          ))}
+        </select><br /><br />
 
-      <form onSubmit={handleSubmit}>
-        <input placeholder="Nama Guru" value={nama} onChange={(e)=>setNama(e.target.value)} />
-        <br/><br/>
-
-        <input placeholder="NIP" value={nip} onChange={(e)=>setNip(e.target.value)} />
-        <br/><br/>
-
-        <select value={idMapel} onChange={(e)=>setIdMapel(e.target.value)}>
+        <select value={form.id_mapel} onChange={e => set("id_mapel", e.target.value)}>
           <option value="">-- Pilih Mapel --</option>
-          {mapel.map((m)=>(
+          {mapel.map(m => (
             <option key={m.id_mapel} value={m.id_mapel}>{m.nama_mapel}</option>
           ))}
-        </select>
-        <br/><br/>
+        </select><br /><br />
 
-        <select value={idUser} onChange={(e)=>setIdUser(e.target.value)}>
-          <option value="">-- Pilih User --</option>
-          {users.map((u)=>(
-            <option key={u.id_user} value={u.id_user}>
-              {u.username}
-            </option>
-          ))}
-        </select>
-        <br/><br/>
+        <input placeholder="Nama Guru" value={form.nama_guru}
+               onChange={e => set("nama_guru", e.target.value)} /><br /><br />
 
-        <button>Tambah</button>
+        <input placeholder="NIP (opsional)" value={form.nip}
+               onChange={e => set("nip", e.target.value)} /><br /><br />
+
+        <button>Simpan</button>
       </form>
     </div>
   );

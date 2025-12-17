@@ -9,51 +9,59 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const router = useRouter();
 
-  async function handleLogin(e) {
-    e.preventDefault();
-    setMessage("Memproses login...");
+ async function handleLogin(e) {
+  e.preventDefault();
+  setMessage("Memproses login...");
 
-    try {
-      const res = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+  try {
+    const res = await fetch("/api/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      // Jika error dari server
-      if (!res.ok || !data.user) {
-        setMessage(data.message || "Login gagal");
-        return;
-      }
-
-      // Simpan user ke localStorage
-      localStorage.setItem("rapor_user", JSON.stringify(data.user));
-
-      // Ambil role (sesuai API kamu sekarang: roleName)
-      const roleName =
-        data.user.roleName?.toLowerCase() ||
-        data.user.role?.nama_role?.toLowerCase() ||
-        "";
-
-      setMessage(`Login berhasil. Role: ${roleName}`);
-
-      // Redirect berdasarkan role
-      if (roleName === "admin") {
-        router.push("/admin");
-      } else if (roleName === "guru") {
-        router.push("/guru");
-      } else if (roleName === "walikelas") {
-        router.push("/walikelas");
-      } else {
-        setMessage("Role tidak dikenali.");
-      }
-    } catch (err) {
-      console.error(err);
-      setMessage("Server error");
+    if (!res.ok || !data.user) {
+      setMessage(data.message || "Login gagal");
+      return;
     }
+
+    // ✅ TENTUKAN ROLE ID DULU (INI KUNCI)
+    const roleId =
+      data.user.id_role ??
+      data.user.role?.id_role ??
+      null;
+
+    console.log("ROLE DEBUG:", roleId, data.user);
+
+    // ✅ BARU BUAT PAYLOAD
+    const payload = {
+      id_user: data.user.id_user,
+      username: data.user.username,
+      roleId: roleId,
+      id_guru: data.user.guru?.id_guru ?? null,
+      id_kelas: data.user.walikelas?.id_kelas ?? null,
+    };
+
+    localStorage.setItem("rapor_user", JSON.stringify(payload));
+
+    // ✅ REDIRECT
+    if (roleId === 1) {
+      router.push("/admin");
+    } else if (roleId === 2) {
+      router.push("/guru");
+    } else if (roleId === 3) {
+      router.push("/walikelas");
+    } else {
+      setMessage("Role tidak dikenali");
+    }
+
+  } catch (err) {
+    console.error(err);
+    setMessage("Server error");
   }
+}
 
   return (
     <div style={{
