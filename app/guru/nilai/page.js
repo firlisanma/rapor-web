@@ -48,9 +48,16 @@ export default function InputNilaiGuru() {
     setSiswa(listSiswa);
 
     // 2️⃣ Ambil nilai lama (PRELOAD)
-    const resNilai = await fetch(
-      `/api/guru/nilai?id_kelas=${kelasId}&id_tahun_ajaran=${ta.id_tahun_ajaran}&semester=${ta.semester}`
-    );
+    const user = localStorage.getItem("rapor_user");
+
+const resNilai = await fetch(
+  `/api/guru/nilai?id_kelas=${kelasId}&id_tahun_ajaran=${ta.id_tahun_ajaran}&semester=${ta.semester}`,
+  {
+    headers: {
+      "x-user": user
+    }
+  }
+);
 
     // 🔎 kalau API preload gagal, jangan bikin UI mati
     if (resNilai.ok) {
@@ -79,34 +86,37 @@ export default function InputNilaiGuru() {
   }
 
   async function simpan() {
-    if (!ta || !kelasId) {
-      alert("Data belum lengkap");
-      return;
-    }
-
-    const payload = siswa.map(s => ({
-      nisn: s.nisn,
-      nilai_angka: nilai[s.nisn] ?? 0
-    }));
-
-    const res = await fetch("/api/guru/nilai/simpan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id_kelas: Number(kelasId),
-        id_tahun_ajaran: ta.id_tahun_ajaran,
-        semester: ta.semester,
-        data: payload
-      })
-    });
-
-    if (!res.ok) {
-      alert("Gagal menyimpan nilai");
-      return;
-    }
-
-    alert("Nilai berhasil disimpan");
-  }
+     if (!ta || !kelasId) {
+       alert("Data belum lengkap");
+        return;
+       }
+       
+       const payload = siswa.map(s => ({
+         nisn: s.nisn,
+         nilai_angka: nilai[s.nisn] ?? 0
+         })); 
+         const user = localStorage.getItem("rapor_user");
+         const res = await fetch("/api/guru/nilai/simpan", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "x-user": user   
+  },
+  body: JSON.stringify({
+    id_kelas: Number(kelasId),
+    id_tahun_ajaran: ta.id_tahun_ajaran,
+    semester: ta.semester,
+    data: payload
+  })
+});
+          
+          if (!res.ok) {
+            alert("Gagal menyimpan nilai");
+            return;
+          }
+          
+          alert("Nilai berhasil disimpan");
+        }
 
   return (
     <div style={{ padding: 20 }}>

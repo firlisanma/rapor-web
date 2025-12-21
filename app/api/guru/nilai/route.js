@@ -21,13 +21,32 @@ export async function GET(req) {
       );
     }
 
+    const userHeader = req.headers.get("x-user");
+if (!userHeader) {
+  return NextResponse.json({ nilai: {} });
+}
+
+const user = JSON.parse(userHeader);
+
+const guru = await prisma.guru.findUnique({
+  where: { id_guru: user.id_guru },
+  select: { id_mapel: true }
+});
+
+if (!guru?.id_mapel) {
+  return NextResponse.json({ nilai: {} });
+}
+
+const id_mapel = guru.id_mapel;
+
     const nilai = await prisma.nilai.findMany({
       where: {
         id_tahun_ajaran: Number(id_tahun_ajaran),
-    semester: Number(semester),
-    siswa: {
-      id_kelas: Number(id_kelas),
-    },
+        semester: Number(semester),
+        id_mapel: Number(id_mapel),
+        siswa: {
+          id_kelas: Number(id_kelas),
+        },
   },
   select: {
     nisn: true,
